@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAppContext } from "../context/AppContext"
 import api from "../lib/axios"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card"
 import { Select } from "../components/ui/select"
@@ -14,7 +14,7 @@ import toast from "react-hot-toast"
 
 export default function RequirementInput() {
   const navigate = useNavigate()
-  const { projects, updateProject, setDraftBrdContent } = useAppContext()
+  const { projects, updateProject } = useAppContext()
 
   const [selectedProjectId, setSelectedProjectId] = useState("")
   const [requirements, setRequirements] = useState<any[]>([])
@@ -100,52 +100,15 @@ export default function RequirementInput() {
 
     setIsGenerating(true)
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-      if (!apiKey) throw new Error("Gemini API Key is missing in .env.local")
+      await api.post("/brd/generate", { projectId: selectedProjectId })
 
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const project = projects.find(p => p.projectId === selectedProjectId)
-      if (!project) throw new Error("Project not found")
-
-      let contextString = `Project Info:\nName: ${project.projectName}\nClient: ${project.client}\nGeography: ${project.geography}\nOwner: ${project.owner}\n\n`
-      contextString += "Requirements & Discussions:\n"
-      for (const req of requirements) {
-        contextString += `\n--- [${req.type} on ${new Date(req.date).toLocaleDateString()}] ---\n`
-        if (req.textContent) contextString += `Notes: ${req.textContent}\n`
-        if (req.links && req.links.length > 0) contextString += `Links: ${req.links.join(", ")}\n`
-        if (req.files && req.files.length > 0) contextString += `Attached Files: ${req.files.join(", ")}\n`
-      }
-
-      const prompt = `You are a Senior Business Analyst. Generate a professional enterprise Business Requirement Document (BRD) using the following compiled context.
-Structure the document strictly using these headers (use proper formatting like bold, lists):
-1. Project Overview
-2. Business Objectives
-3. Stakeholders
-4. Functional Requirements
-5. Non-Functional Requirements
-6. Assumptions & Constraints
-
-Make sure to synthesize all the discussion notes, file references, and URLs into a cohesive document. The writing style must be highly professional and suitable for an enterprise environment. Extract any implied requirements from the transcripts. Do not write filler intros or outtros, output only the document content.
-
-Context:
-${contextString}
-`
-
-      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" })
-      const result = await model.generateContent(prompt)
-      const response = await result.response
-      const generatedContent = response.text()
-
-      if (!generatedContent) throw new Error("Generated content is blank")
-
-      setDraftBrdContent(selectedProjectId, generatedContent)
       updateProject(selectedProjectId, { status: "Analysis" })
 
-      toast.success("BRD Generated Successfully (Frontend)!")
+      toast.success("BRD Generated and Saved Successfully!")
       navigate(`/brd/${selectedProjectId}`)
     } catch (error: any) {
       console.error(error)
-      toast.error(error.message || "Failed to generate BRD locally")
+      toast.error(error.response?.data?.message || error.message || "Failed to generate BRD backend")
     } finally {
       setIsGenerating(false)
     }

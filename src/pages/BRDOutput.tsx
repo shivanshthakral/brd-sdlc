@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { Download, FileText, Printer, ChevronDown, Plus } from "lucide-react"
+import { Download, FileText, Printer, ChevronDown, Edit, Save, X } from "lucide-react"
 import { useAppContext } from "../context/AppContext"
 import api from "../lib/axios"
 import { Button } from "../components/ui/button"
 import { Card, CardContent } from "../components/ui/card"
 import ReactMarkdown from "react-markdown"
 import toast from "react-hot-toast"
+import { Textarea } from "../components/ui/textarea"
 
 export default function BRDOutput() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { projects, draftBrdContent } = useAppContext()
+  const { projects } = useAppContext()
   
   const [project, setProject] = useState(projects.find(p => p.projectId === id))
   const [versions, setVersions] = useState<any[]>([])
   const [activeVersion, setActiveVersion] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editContent, setEditContent] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
 
   useEffect(() => {
     // If we land here but context hasn't loaded project yet, let's wait or fetch it
@@ -26,22 +31,9 @@ export default function BRDOutput() {
 
   useEffect(() => {
     if (id) {
-      if (draftBrdContent && draftBrdContent[id]) {
-        const draftVersion = {
-          _id: "draft",
-          projectId: id,
-          version: "Draft (Unsaved)",
-          content: draftBrdContent[id],
-          generatedAt: new Date().toISOString()
-        };
-        setVersions([draftVersion]);
-        setActiveVersion(draftVersion);
-        setLoading(false);
-      } else {
-        fetchVersions()
-      }
+      fetchVersions()
     }
-  }, [id, draftBrdContent])
+  }, [id])
 
   const fetchVersions = async () => {
     try {
@@ -56,6 +48,33 @@ export default function BRDOutput() {
       setLoading(false)
     }
   }
+
+  const handleEdit = () => {
+    if (activeVersion) {
+      setEditContent(activeVersion.content);
+      setIsEditing(true);
+    }
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    if (!activeVersion) return;
+    setIsSaving(true);
+    try {
+      const { data } = await api.put(`/brd/${activeVersion._id}`, { content: editContent });
+      setActiveVersion(data);
+      setVersions(versions.map(v => v._id === data._id ? data : v));
+      setIsEditing(false);
+      toast.success("BRD updated successfully");
+    } catch (error) {
+      toast.error("Failed to save updates");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDownloadWord = () => {
     if (!project || !activeVersion) return;
@@ -116,7 +135,10 @@ export default function BRDOutput() {
               value={activeVersion?._id || ""}
               onChange={(e) => {
                 const ver = versions.find(v => v._id === e.target.value)
-                if (ver) setActiveVersion(ver)
+                if (ver) {
+                  setActiveVersion(ver)
+                  setIsEditing(false)
+                }
               }}
             >
               {versions.map(v => (
@@ -136,6 +158,12 @@ export default function BRDOutput() {
             <Download className="h-4 w-4" />
             Export Word
           </Button>
+          {!isEditing && (
+            <Button variant="secondary" className="gap-2" onClick={handleEdit}>
+              <Edit className="h-4 w-4" />
+              Edit
+            </Button>
+          )}
         </div>
       </div>
 
@@ -176,18 +204,39 @@ export default function BRDOutput() {
         </div>
 
         <CardContent className="p-10 space-y-10 bg-white dark:bg-slate-950 font-serif leading-relaxed text-slate-800 dark:text-slate-300">
-          <div className="markdown-body [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-primary [&>h1]:mb-6 [&>h1]:border-b [&>h1]:pb-2 [&>h1]:font-sans [&>h1]:uppercase [&>h1]:tracking-wide
-                          [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-primary [&>h2]:mb-4 [&>h2]:mt-8 [&>h2]:border-b [&>h2]:pb-2 [&>h2]:font-sans [&>h2]:uppercase [&>h2]:tracking-wide 
-                          [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-slate-800 [&>h3]:dark:text-slate-200 [&>h3]:mt-6 [&>h3]:mb-2 
-                          [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ul]:mb-4
-                          [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-3 [&>ol]:mb-4
-                          [&>p]:mb-4 [&>strong]:font-bold [&>table]:w-full [&>table]:border-collapse [&>table]:mb-6
-                          [&>table>thead]:bg-muted [&>table>thead>tr>th]:p-3 [&>table>thead>tr>th]:text-left [&>table>thead>tr>th]:font-medium
-                          [&>table>tbody>tr>td]:p-3 [&>table>tbody>tr>td]:border-b">
-            {activeVersion && (
-              <ReactMarkdown>{activeVersion.content}</ReactMarkdown>
-            )}
-          </div>
+          {isEditing ? (
+            <div className="flex flex-col gap-4">
+              <Textarea
+                className="min-h-[60vh] font-mono text-base p-6 border-2 focus-visible:ring-primary shadow-inner"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder="Edit your BRD content here in Markdown format..."
+              />
+              <div className="flex justify-end gap-4 mt-4 border-t pt-4">
+                <Button variant="outline" onClick={handleCancelEditing} disabled={isSaving}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+                  <Save className="h-4 w-4" />
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="markdown-body [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-primary [&>h1]:mb-6 [&>h1]:border-b [&>h1]:pb-2 [&>h1]:font-sans [&>h1]:uppercase [&>h1]:tracking-wide
+                            [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-primary [&>h2]:mb-4 [&>h2]:mt-8 [&>h2]:border-b [&>h2]:pb-2 [&>h2]:font-sans [&>h2]:uppercase [&>h2]:tracking-wide 
+                            [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-slate-800 [&>h3]:dark:text-slate-200 [&>h3]:mt-6 [&>h3]:mb-2 
+                            [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ul]:mb-4
+                            [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-3 [&>ol]:mb-4
+                            [&>p]:mb-4 [&>strong]:font-bold [&>table]:w-full [&>table]:border-collapse [&>table]:mb-6
+                            [&>table>thead]:bg-muted [&>table>thead>tr>th]:p-3 [&>table>thead>tr>th]:text-left [&>table>thead>tr>th]:font-medium
+                            [&>table>tbody>tr>td]:p-3 [&>table>tbody>tr>td]:border-b">
+              {activeVersion && (
+                <ReactMarkdown>{activeVersion.content}</ReactMarkdown>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
