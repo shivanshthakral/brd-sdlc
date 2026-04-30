@@ -1,73 +1,98 @@
-# React + TypeScript + Vite
+🚀 React + TypeScript + Vite Starter
+⚡ Production-Ready • Scalable • High-Performance Frontend Boilerplate
+<p align="center"> <b>Build modern web apps faster with a clean, scalable, and optimized setup.</b> </p>
+🌟 Overview
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository provides a high-performance frontend foundation using modern technologies. It is designed to deliver:
 
-Currently, two official plugins are available:
+⚡ Blazing-fast development experience with Vite
+⚛️ Strongly-typed UI development using React + TypeScript
+🧹 Scalable and strict linting configuration
+🏗️ Clean architecture for production-grade applications
+📦 Optimized build output for deployment
+🧠 Tech Stack
+React — Component-based UI development
+TypeScript — Static typing for reliability
+Vite — Next-generation build tool
+ESLint — Code quality and consistency
+SWC / OXC — Ultra-fast compilation
+📂 Project Structure
+├── public/             # Static assets
+├── src/
+│   ├── assets/         # Images & resources
+│   ├── components/     # Reusable UI components
+│   ├── pages/          # Page-level components
+│   ├── hooks/          # Custom React hooks
+│   ├── utils/          # Helper functions
+│   ├── App.tsx         # Root component
+│   └── main.tsx        # Entry point
+├── tsconfig.json
+├── vite.config.ts
+└── eslint.config.js
+⚙️ Getting Started
+1. Clone Repository
+git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+cd YOUR_REPO
+2. Install Dependencies
+npm install
+3. Start Development Server
+npm run dev
+4. Build for Production
+npm run build
+⚡ Performance Highlights
+⚡ Instant server startup
+🔁 Hot Module Replacement (HMR)
+📦 Optimized production builds
+🧠 Efficient TypeScript compilation
+🧹 Advanced ESLint Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Enable type-aware linting for production-level quality:
 
-## React Compiler
+tseslint.configs.recommendedTypeChecked
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+For stricter rules:
 
-## Expanding the ESLint configuration
+tseslint.configs.strictTypeChecked
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Optional enhancements:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+eslint-plugin-react-x
+eslint-plugin-react-dom
+🔌 Plugins
+@vitejs/plugin-react → Uses OXC for fast transforms
+@vitejs/plugin-react-swc → Uses SWC for ultra-fast builds
+🧩 Extend This Starter
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+You can easily integrate:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+🔐 Authentication (JWT / OAuth)
+🌐 API layer (Axios / React Query)
+🎨 UI frameworks (Tailwind CSS / Material UI)
+📦 State management (Redux / Zustand)
+🧪 Testing (Vitest / Jest)
+📈 Best Practices
+Keep components modular and reusable
+Use custom hooks for logic separation
+Follow strict typing everywhere
+Maintain clean folder structure
+Write self-documenting code
+🤝 Contributing
+git checkout -b feature/your-feature
+git commit -m "Add: your feature"
+git push origin feature/your-feature
+📄 License
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+MIT License © 2026
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+👨‍💻 Author
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Shivansh Thakral
+Full Stack Developer | AI Enthusiast
+
+⭐ Support
+
+If this project helps you:
+
+⭐ Star the repository
+🍴 Fork it
+📢 Share it
